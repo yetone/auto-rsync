@@ -1,0 +1,2 @@
+click==5.1
+watchdog==0.8.3
