@@ -6,7 +6,7 @@ Auto RSync files by watch filesystem events.
 
     $ auto-rsync --help
     
-    Usage: auto_rsync.py [OPTIONS] CURRENT_PATH REMOTE_PATH
+    Usage: auto_rsync.py [OPTIONS] LOCAL_PATH REMOTE_PATH
     
     Options:
       --observer-timeout INTEGER  The observer timeout, default 1
