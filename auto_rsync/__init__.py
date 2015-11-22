@@ -56,7 +56,7 @@ class RSyncEventHandler(FileSystemEventHandler):
         self.log('Created {}: {}'.format(what, event.src_path),
                  COLORS.GREEN)
 
-        self.rsync()
+        self.rsync(event.src_path)
 
     def on_deleted(self, event):
         super(RSyncEventHandler, self).on_deleted(event)
@@ -74,17 +74,24 @@ class RSyncEventHandler(FileSystemEventHandler):
         self.log('Modified {}: {}'.format(what, event.src_path),
                  COLORS.YELLOW)
 
-        self.rsync()
+        self.rsync(event.src_path)
 
-    def rsync(self):
+    def rsync(self, relative_path=None):
         self.log('RSyncing', COLORS.PURPLE)
+
+        local_path = self.local_path
+        remote_path = self.remote_path
+        if relative_path is not None:
+            local_path = os.path.join(local_path, relative_path)
+            remote_path = os.path.join(remote_path, relative_path)
+
         cmd = 'rsync -avzP {} {} {}'.format(
-            ' '.join(self.rsync_options), self.local_path, self.remote_path
+            ' '.join(self.rsync_options), local_path, remote_path
         )
         self.log(cmd, COLORS.BOLD)
         with open(os.devnull, 'w') as DEVNULL:
             subprocess.call(['rsync', '-avzP'] + self.rsync_options
-                            + [self.local_path, self.remote_path],
+                            + [local_path, remote_path],
                             stdout=DEVNULL,
                             stderr=subprocess.STDOUT)
 
