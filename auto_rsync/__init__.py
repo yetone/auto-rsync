@@ -28,8 +28,8 @@ class COLORS(object):
 class RSyncEventHandler(FileSystemEventHandler):
     """RSync when the events captured."""
 
-    def __init__(self, current_path, remote_path, rsync_options=''):
-        self.current_path = current_path
+    def __init__(self, local_path, remote_path, rsync_options=''):
+        self.local_path = local_path
         self.remote_path = remote_path
         self.rsync_options = rsync_options.split()
         self.rsync()
@@ -79,18 +79,18 @@ class RSyncEventHandler(FileSystemEventHandler):
     def rsync(self):
         self.log('RSyncing', COLORS.PURPLE)
         cmd = 'rsync -avzP {} {} {}'.format(
-            ' '.join(self.rsync_options), self.current_path, self.remote_path
+            ' '.join(self.rsync_options), self.local_path, self.remote_path
         )
         self.log(cmd, COLORS.BOLD)
         with open(os.devnull, 'w') as DEVNULL:
             subprocess.call(['rsync', '-avzP'] + self.rsync_options
-                            + [self.current_path, self.remote_path],
+                            + [self.local_path, self.remote_path],
                             stdout=DEVNULL,
                             stderr=subprocess.STDOUT)
 
 
 @click.command()
-@click.argument('current-path')
+@click.argument('local-path')
 @click.argument('remote-path')
 @click.option('--observer-timeout',
               default=DEFAULT_OBSERVER_TIMEOUT,
@@ -98,11 +98,11 @@ class RSyncEventHandler(FileSystemEventHandler):
                   DEFAULT_OBSERVER_TIMEOUT
               ))
 @click.option('--rsync-options', default='', help='rsync command options')
-def main(current_path, remote_path,
+def main(local_path, remote_path,
          observer_timeout, rsync_options):
-    event_handler = RSyncEventHandler(current_path, remote_path, rsync_options)
+    event_handler = RSyncEventHandler(local_path, remote_path, rsync_options)
     observer = Observer(timeout=observer_timeout)
-    observer.schedule(event_handler, current_path, recursive=True)
+    observer.schedule(event_handler, local_path, recursive=True)
     observer.start()
     try:
         while True:
