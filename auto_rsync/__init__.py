@@ -56,7 +56,7 @@ class RSyncEventHandler(FileSystemEventHandler):
         self.log('Created {}: {}'.format(what, event.src_path),
                  COLORS.GREEN)
 
-        self.rsync(event.src_path)
+        self.rsync()
 
     def on_deleted(self, event):
         super(RSyncEventHandler, self).on_deleted(event)
@@ -74,7 +74,7 @@ class RSyncEventHandler(FileSystemEventHandler):
         self.log('Modified {}: {}'.format(what, event.src_path),
                  COLORS.YELLOW)
 
-        self.rsync(event.src_path)
+        self.rsync()
 
     def rsync(self, relative_path=None):
         self.log('RSyncing', COLORS.PURPLE)
