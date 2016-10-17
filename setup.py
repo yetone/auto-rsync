@@ -7,13 +7,13 @@ for line in open('requirements.txt', 'r'):
 
 setup(
     name='auto-rsync',
-    version='0.0.6',
+    version='0.0.7',
     keywords=('sync', 'rsync', 'auto rsync', 'auto', 'filesystem'),
     description='Auto RSync by watch filesystem events.',
     url='http://github.com/yetone/auto-rsync',
     license='MIT License',
     author='yetone',
-    author_email='i@yetone.net',
+    author_email='yetoneful@gmail.com',
     packages=find_packages(),
     entry_points={
         'console_scripts': [

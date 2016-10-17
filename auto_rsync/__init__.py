@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import logging
 import subprocess
@@ -25,6 +26,10 @@ class COLORS(object):
     END = '\033[0m'
 
 
+def _get_what(event):
+    return 'directory' if event.is_directory else 'file'
+
+
 class RSyncEventHandler(FileSystemEventHandler):
     """RSync when the events captured."""
 
@@ -41,29 +46,37 @@ class RSyncEventHandler(FileSystemEventHandler):
     def on_moved(self, event):
         super(RSyncEventHandler, self).on_moved(event)
 
-        what = 'directory' if event.is_directory else 'file'
-        self.log('Moved {}: from {} to {}'.format(what,
-                                                  event.src_path,
-                                                  event.dest_path),
-                 COLORS.BLUE)
+        what = _get_what(event)
+        self.log(
+            'Moved {}: from {} to {}'.format(
+                what,
+                event.src_path,
+                event.dest_path
+            ),
+            COLORS.BLUE
+        )
 
         self.rsync()
 
     def on_created(self, event):
         super(RSyncEventHandler, self).on_created(event)
 
-        what = 'directory' if event.is_directory else 'file'
-        self.log('Created {}: {}'.format(what, event.src_path),
-                 COLORS.GREEN)
+        what = _get_what(event)
+        self.log(
+            'Created {}: {}'.format(what, event.src_path),
+            COLORS.GREEN
+        )
 
         self.rsync()
 
     def on_deleted(self, event):
         super(RSyncEventHandler, self).on_deleted(event)
 
-        what = 'directory' if event.is_directory else 'file'
-        self.log('Deleted {}: {}'.format(what, event.src_path),
-                 COLORS.RED)
+        what = _get_what(event)
+        self.log(
+            'Deleted {}: {}'.format(what, event.src_path),
+            COLORS.RED
+        )
 
         self.rsync()
 
@@ -71,8 +84,10 @@ class RSyncEventHandler(FileSystemEventHandler):
         super(RSyncEventHandler, self).on_modified(event)
 
         what = 'directory' if event.is_directory else 'file'
-        self.log('Modified {}: {}'.format(what, event.src_path),
-                 COLORS.YELLOW)
+        self.log(
+            'Modified {}: {}'.format(what, event.src_path),
+            COLORS.YELLOW
+        )
 
         self.rsync()
 
@@ -90,23 +105,36 @@ class RSyncEventHandler(FileSystemEventHandler):
         )
         self.log(cmd, COLORS.BOLD)
         with open(os.devnull, 'w') as DEVNULL:
-            subprocess.call(['rsync', '-avzP'] + self.rsync_options
-                            + [local_path, remote_path],
-                            stdout=DEVNULL,
-                            stderr=subprocess.STDOUT)
+            subprocess.call(
+                cmd.split(' '),
+                stdout=DEVNULL,
+                stderr=subprocess.STDOUT
+            )
 
 
 @click.command()
 @click.argument('local-path')
 @click.argument('remote-path')
-@click.option('--observer-timeout',
-              default=DEFAULT_OBSERVER_TIMEOUT,
-              help='The observer timeout, default {}'.format(
-                  DEFAULT_OBSERVER_TIMEOUT
-              ))
+@click.option(
+    '--observer-timeout',
+    default=DEFAULT_OBSERVER_TIMEOUT,
+    help='The observer timeout, default {}'.format(
+        DEFAULT_OBSERVER_TIMEOUT
+    )
+)
 @click.option('--rsync-options', default='', help='rsync command options')
-def main(local_path, remote_path,
-         observer_timeout, rsync_options):
+def main(
+    local_path, remote_path,
+    observer_timeout, rsync_options
+):
+    if subprocess.call(['which', 'rsync']) != 0:
+        print(
+            COLORS.RED +
+            'Can\'t find the `rsync` program, you need to install it.' +
+            COLORS.END
+        )
+        sys.exit(1)
+
     event_handler = RSyncEventHandler(local_path, remote_path, rsync_options)
     observer = Observer(timeout=observer_timeout)
     observer.schedule(event_handler, local_path, recursive=True)
