@@ -123,9 +123,10 @@ class RSyncEventHandler(FileSystemEventHandler):
     )
 )
 @click.option('--rsync-options', default='', help='rsync command options')
+@click.option('--rsync-file-opts', default=None, help='file with rsync options')
 def main(
     local_path, remote_path,
-    observer_timeout, rsync_options
+    observer_timeout, rsync_options, rsync_file_opts
 ):
     if subprocess.call(['which', 'rsync']) != 0:
         print(
@@ -134,6 +135,11 @@ def main(
             COLORS.END
         )
         sys.exit(1)
+
+    if rsync_file_opts:
+        with open(rsync_file_opts) as opts_file:
+            opts = map(str.strip, opts_file)
+            rsync_options += u' '.join(opts)
 
     event_handler = RSyncEventHandler(local_path, remote_path, rsync_options)
     observer = Observer(timeout=observer_timeout)
