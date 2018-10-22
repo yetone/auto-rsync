@@ -7,7 +7,7 @@ for line in open('requirements.txt', 'r'):
 
 setup(
     name='auto-rsync',
-    version='0.0.7',
+    version='0.0.8',
     keywords=('sync', 'rsync', 'auto rsync', 'auto', 'filesystem'),
     description='Auto RSync by watch filesystem events.',
     url='http://github.com/yetone/auto-rsync',

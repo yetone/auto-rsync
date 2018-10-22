@@ -83,7 +83,7 @@ class RSyncEventHandler(FileSystemEventHandler):
     def on_modified(self, event):
         super(RSyncEventHandler, self).on_modified(event)
 
-        what = 'directory' if event.is_directory else 'file'
+        what = _get_what(event)
         self.log(
             'Modified {}: {}'.format(what, event.src_path),
             COLORS.YELLOW
